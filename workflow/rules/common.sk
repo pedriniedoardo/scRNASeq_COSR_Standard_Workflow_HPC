@@ -1,0 +1,53 @@
+# Common Python functions for Cell Ranger 
+import pandas as pd
+from snakemake.utils import validate
+
+# Validate the config file using a schema
+validate(config, schema="../schemas/config.schema.yaml")
+
+# Rule to copy the sample CSV file to a common location
+rule copy_sample_csv:
+    input:
+        "pypette/samples/all/runs/all/samples.csv"
+    output:
+        "config/samples.csv"
+    shell:
+        "cp {input} {output}"
+
+# Load sample metadata from the config file
+samples = (
+    pd.read_csv(config["samples"],
+                dtype={"sample_name": str, "sample_number": str, "sample_lane": str, 
+                       "sample_read": str, "sample_chunknb": str, "sample_run": str})
+        .set_index(["sample_name", "sample_number", "sample_lane", "sample_read", 
+                    "sample_chunknb", "sample_run"], drop=False)
+        .sort_index()
+)
+
+# Function to retrieve FASTQ input directories for Cell Ranger
+def get_cellranger_fastqs(wildcards):
+    """
+    Constructs the correct FASTQ input paths based on sample metadata.
+    If multiple lanes exist, it ensures all lanes are included.
+    """
+    # Extract all lanes for the given sample
+    sample_data = samples.loc[(wildcards.sample_name, wildcards.sample_number, :, 
+                               "R1", wildcards.sample_chunknb, wildcards.sample_run)]
+
+    # Get unique lanes for the sample
+    lanes = sample_data["sample_lane"].unique()
+
+    # Generate FASTQ directory paths for each lane
+    fastq_dirs = ["results/fastq_link/{RUN}/{S}_{N}_{L}/".format(
+                    RUN=wildcards.sample_run, S=wildcards.sample_name, 
+                    N=wildcards.sample_number, L=lane) for lane in lanes]
+
+    return fastq_dirs  # Returns a list of directories, which Cell Ranger can handle
+
+# Benchmarking rule
+rule benchmark:
+    output:
+        "benchmarks/Final_benchmark.txt"
+    script:
+        "../scripts/benchmark.py"
+

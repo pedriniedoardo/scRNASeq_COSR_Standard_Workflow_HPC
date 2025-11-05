@@ -1,0 +1,12 @@
+# files
+*.log
+*.mro
+
+# folders
+.snakemake/
+benchmarks/
+logs/
+results/
+pypette/
+logs/
+results_old/
