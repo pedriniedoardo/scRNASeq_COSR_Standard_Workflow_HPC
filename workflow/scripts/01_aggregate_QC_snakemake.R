@@ -89,10 +89,16 @@ p_feature <- meta_total %>%
   theme(strip.background = element_blank(),axis.text.x = element_text(angle = 45,hjust = 1))
 
 # define the table to fill the QC parameters
+# after the lates FG we decided to define some all inclusive aprameters
+# LUT_df <- data.frame(sample_name = sample_name,
+#                      featureLow_thr = NA,
+#                      featureHigh_thr = NA,
+#                      mito_thr = NA)
+
 LUT_df <- data.frame(sample_name = sample_name,
-                     featureLow_thr = NA,
-                     featureHigh_thr = NA,
-                     mito_thr = NA)
+                     featureLow_thr = 0,
+                     featureHigh_thr = Inf,
+                     mito_thr = Inf)
 
 # ======================================================================
 # == save output ==

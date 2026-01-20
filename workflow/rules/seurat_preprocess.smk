@@ -40,6 +40,26 @@ rule runAggregateQC:
     script:
         "../scripts/01_aggregate_QC_snakemake.R"
 
+# checkpoint runApplyQC:
+#     '''
+#     This rule preprcess the individual samples from the cellranger output.
+#     '''
+#     input:
+#         rds = rules.runSamplePreprocessing.output.rds,
+#         LUT_QC = rules.runAggregateQC.output.LUT_QC
+#     output:
+#         rds = config["out_location"] + "Seurat/object/{sample_name}_obj_postQC.rds",
+#         meta = config["out_location"] + "Seurat/table/{sample_name}_meta_postQC.tsv",
+#     conda: config["env_seurat"]
+#     log:
+#         'logs/Seurat/{sample_name}/runApplyQC.log'
+#     benchmark:
+#         'benchmarks/Seurat/{sample_name}/runApplyQC.txt'
+#     params:
+#         # id_org = config["ref"]["organism_id"]
+#     script:
+#         "../scripts/02_apply_QC_snakemake.R"
+
 rule runApplyQC:
     '''
     This rule preprcess the individual samples from the cellranger output.
@@ -59,3 +79,75 @@ rule runApplyQC:
         # id_org = config["ref"]["organism_id"]
     script:
         "../scripts/02_apply_QC_snakemake.R"
+
+
+# ====================================================================
+# == This function computes the number of cells in each experiment,
+# == in order to assign resources for the integration step
+# ====================================================================
+
+# def compute_memory_usage(wildcards):
+    
+#     mem_per_cell = config["memory_per_cell"]
+#     max_mem      = config["max_mem_mb"]
+    
+#     total_cells = 0
+#     for sample in SAMPLES_merge.keys():
+#         ck = checkpoints.runApplyQC.get(sample_name=sample)
+#         meta_file = ck.output["meta"]
+#         with open(meta_file) as fp:
+#             total_cells += sum(1 for _ in fp)
+
+#     requested_mem = total_cells * mem_per_cell
+#     return min(requested_mem, max_mem)
+
+# rule integrateSamples:
+#     '''
+#     This rule integrates the different samples via Harmony
+#     '''
+#     input:
+#         rds = lambda wc: [checkpoints.runApplyQC.get(sample_name=s).output.rds
+#                   for s in SAMPLES_merge.keys()]
+#     output:
+#         rds = config["out_location"] + "Seurat/object/integrated_obj.rds",
+#         meta = config["out_location"] + "Seurat/table/integrated_obj_meta.tsv",
+#         markers = config["out_location"] + "Seurat/table/integrated_obj_markers.tsv",
+#     conda: config["env_seurat"]
+#     resources:
+#         mem_mb = compute_memory_usage
+#     log:
+#         'logs/Seurat/integrated/runApplyQC.log'
+#     benchmark:
+#         'benchmarks/Seurat/integrated/integrateSamples.txt'
+#     params:
+#         # id_org = config["ref"]["organism_id"]
+#     script:
+#         "../scripts/03_integrate.R"
+
+rule integrateSamples:
+    '''
+    This rule integrates the different samples via Harmony
+    '''
+    input:
+        rds = expand(rules.runApplyQC.output.rds,
+        sample_name=SAMPLES_merge.keys()),
+        meta_tables = expand(rules.runApplyQC.output.meta,
+        sample_name=SAMPLES_merge.keys())
+    output:
+        rds = config["out_location"] + "Seurat/object/integrated_obj.rds",
+        meta = config["out_location"] + "Seurat/table/integrated_obj_meta.tsv",
+        markers = config["out_location"] + "Seurat/table/integrated_obj_markers.tsv",
+    conda: config["env_seurat"]
+    resources:
+        mem_mb = lambda wildcards, input: min(
+            config["max_mem_mb"],
+            sum(sum(1 for line in open(f)) for f in input.meta_tables) * config["memory_per_cell"]
+        )
+    log:
+        'logs/Seurat/integrated/runApplyQC.log'
+    benchmark:
+        'benchmarks/Seurat/integrated/integrateSamples.txt'
+    params:
+        # id_org = config["ref"]["organism_id"]
+    script:
+        "../scripts/03_integrate.R"

@@ -1,0 +1,26 @@
+name: env_R_COSR
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  # --- Core ---
+  - r-base
+
+  # --- R Packages for Single-Cell Analysis ---
+  - bioconductor-scater
+  - r-seurat
+  - r-tidyverse
+  - r-robustbase
+  - r-patchwork
+  - bioconductor-scuttle
+  - bioconductor-scdblfinder
+  - r-soupx
+  - r-presto
+  - r-harmony
+
+  # --- Recommended ---
+  - r-essentials
+  - r-irkernel
+  - r-devtools

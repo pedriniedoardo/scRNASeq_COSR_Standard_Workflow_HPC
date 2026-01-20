@@ -14,6 +14,7 @@ conda-base-path: /opt/common/tools/ric.cosr/miniconda3
 # TBD
 #
 default-resources:
+    slurm_account: "ric.cosr"
     mem_mb: 5000
     cores: 1
 
@@ -30,6 +31,7 @@ set-threads:
     runAggregateQC: 4
     runApplyQC: 4
     cellranger_mkref: 16
+    integrateSamples: 8
 
 set-resources:
     runCellranger: 

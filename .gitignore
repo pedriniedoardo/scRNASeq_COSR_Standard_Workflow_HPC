@@ -1,6 +1,7 @@
 # files
 *.log
 *.mro
+.Rhistory
 
 # folders
 .snakemake/
@@ -10,5 +11,8 @@ results/
 pypette/
 logs/
 results_old/
+.Rproj.user
+workflow/test/R_code/out/
+workflow/test/R_code/data/
 
 # this is just a test

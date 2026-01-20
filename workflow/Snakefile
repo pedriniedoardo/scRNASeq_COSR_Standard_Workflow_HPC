@@ -187,10 +187,33 @@ rule seurat_preprocessing:
 
 # --- Seurat analysis ---
 #
+# rule seurat_analysis:
+#     '''
+#     rule to run the seurat analysis.
+#     '''
+#     input:
+#         ######################################################
+#         # added as last rule, but not needed
+#         expand(rules.moveCellrangerSummaryMultiRun.output.summary,
+#                 sample_name=SAMPLES_merge.keys()),
+#         expand(rules.runMultiqc1MultiRun.output.html),
+#         ######################################################
+
+#         expand(rules.runApplyQC.output.rds,sample_name=SAMPLES_merge.keys()),
+#         expand(rules.runApplyQC.output.meta,sample_name=SAMPLES_merge.keys())
+
 rule seurat_analysis:
     '''
     rule to run the seurat analysis.
     '''
     input:
-        expand(rules.runApplyQC.output.rds,sample_name=SAMPLES_merge.keys()),
-        expand(rules.runApplyQC.output.meta,sample_name=SAMPLES_merge.keys())
+        ######################################################
+        # added as last rule, but not needed
+        expand(rules.moveCellrangerSummaryMultiRun.output.summary,
+                sample_name=SAMPLES_merge.keys()),
+        expand(rules.runMultiqc1MultiRun.output.html),
+        ######################################################
+
+        rules.integrateSamples.output.rds,
+        rules.integrateSamples.output.meta,
+        rules.integrateSamples.output.markers
