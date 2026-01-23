@@ -34,17 +34,19 @@ min_pct = 0.1
 # ======================================================================
 
 # read in the rds file
-rds <- snakemake@input$rds
+# rds <- snakemake@input$rds
+rds <- c("../../../results/Seurat/object/connect_5k_pbmc_NGSC3_ch1_gex_1_cellbender_obj_postQC.rds",
+         "../../../results/Seurat/object/connect_5k_pbmc_NGSC3_ch1_gex_2_cellbender_obj_postQC.rds")
 
 # define the output
-out_object <- snakemake@output$rds
-out_meta <- snakemake@output$meta
-out_markers <- snakemake@output$markers
+# out_object <- snakemake@output$rds
+# out_meta <- snakemake@output$meta
+# out_markers <- snakemake@output$markers
 
 message("input rds:"); cat(rds, sep = '\n')
-message("output rds: ", out_object)
-message("output meta: ", out_meta)
-message("output markers: ", out_markers)
+# message("output rds: ", out_object)
+# message("output meta: ", out_meta)
+# message("output markers: ", out_markers)
 
 # ======================================================================
 # == load and rename the barcodes ==
@@ -66,6 +68,9 @@ lapply(all_objects, function(obj) {
   
   # swap the metadata
   obj@meta.data <- meta_fix
+  
+  # remove the scaled.data layer
+  obj[["RNA"]]$scale.data <- NULL
   
   return(obj)
 }) -> all_objects
@@ -131,7 +136,7 @@ merged <- merged %>%
     reduction.key = "PC_",
     seed.use = 42
   )
-  
+
 # ======================================================================
 # == integrate via Harmony ==
 # ======================================================================
@@ -274,14 +279,14 @@ integrated.markers = lapply(resolutions, function(res) {
     base = 2, # The base with respect to which logarithms are computed.
     return.thresh = 0.01, # Only return markers that have a p-value < return.thresh, or a power > return.thresh (if the test is ROC)
     densify = FALSE # Convert the sparse matrix to a dense form before running the DE test. This can provide speedups but might require higher memory; default is FALSE   
-    )
+  )
   markers.res %>% 
     mutate(diff.pct = pct.1 - pct.2) %>%
     mutate(resolution = res)
-  })
+})
 # row binding to obtain a unique data.frame
 integrated.markers = do.call('rbind', integrated.markers)
-  
+
 # ======================================================================
 # == save output ==
 # ======================================================================

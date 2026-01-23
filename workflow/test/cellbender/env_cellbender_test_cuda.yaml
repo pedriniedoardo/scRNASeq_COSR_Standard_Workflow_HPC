@@ -1,0 +1,17 @@
+name: env_cellbender_cuda
+channels:
+  - pytorch
+  - nvidia
+  - bioconda
+  - conda-forge
+dependencies:
+  # 1. Explicitly define Python version
+  - python=3.7
+  
+  # 2. Force GPU PyTorch (PyTorch 1.13 + CUDA 11.7)
+  - pytorch=1.13.1
+  - torchvision=0.14.1
+  - pytorch-cuda=11.7
+  
+  # 3. Install CellBender
+  - bioconda::cellbender=0.3.2

@@ -1,4 +1,3 @@
-
 # files
 *.log
 *.mro
@@ -13,9 +12,9 @@ pypette/
 logs/
 results_old/
 .Rproj.user
+
 workflow/test/R_code/out/
 workflow/test/R_code/data/
-
-# this is just a test
-# this line is added in main
-# add a line for git test
+workflow/test/velocyto/connect_5k_pbmc_NGSC3_ch1_gex_1/
+workflow/test/cellbender/example/
+workflow/test/cellbender/test_connect_5k_pbmc

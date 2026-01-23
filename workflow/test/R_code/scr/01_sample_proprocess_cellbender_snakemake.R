@@ -23,50 +23,71 @@ options(Seurat.object.assay.version = "v5")
 # == Snakemake integation ==
 # ======================================================================
 
-# define the project folder
-# folder = directory(config["out_location"] + "cellranger/merged/{sample_name}")
-# result_folder <- "/beegfs/scratch/ric.cosr/pedrini.edoardo/test/test_seurat_COSR/data/connect_5k_pbmc_NGSC3_ch1_gex_1"
-input_target <- snakemake@input$target
+# # define the project folder
+# # folder = directory(config["out_location"] + "cellranger/merged/{sample_name}")
+# result_folder <- "/idle/ric.cosr/ric.cosr/pedrini.edoardo/sc-rna-seq-cosr-standard-workflow-test2/workflow/test/cellbender/test_connect_5k_pbmc"
+# # result_folder <- snakemake@input$result_folder
+# 
+# # define the data to be loaded
+# # in_id_data <- "cellbender_output_filtered.h5"
+# in_id_data <- "filtered_feature_bc_matrix.h5"
+# 
+# # define ogganisim
+# in_id_org <- "9606"
+# # in_id_org <- snakemake@params$id_org
+
+# -------------------------------------------------------------------------
+# new implementation after introducing the cellbender module
+# Get the input object (this is either the default h5 from cellranger or the one from cellbender)
+# input_target <- snakemake@input[["target"]]
+input_target <- "../../../results/cellbender/merged/connect_5k_pbmc_NGSC3_ch1_gex_1/cellbender_out_filtered.h5"
+input_target <- "../../../results/cellranger/merged/connect_5k_pbmc_NGSC3_ch1_gex_1"
+
 message("input target: ", input_target)
 
 # Get the sample id
 # folder = directory(config["out_location"] + "cellranger/merged/{sample_name}")
-# in_id_sample <- "connect_5k_pbmc_NGSC3_ch1_gex_1"
-in_id_sample <- snakemake@wildcards$sample_name
+# in_id_sample <- snakemake@wildcards$sample_name
+in_id_sample <- "connect_5k_pbmc_NGSC3_ch1_gex_1"
+
 message("sample id: ", in_id_sample)
 
-# Get the boolean flag for cellbender
-# use_cellbender <- T
-use_cellbender <- snakemake@params$use_cellbender
-message("cellbender: ", use_cellbender)
+# Get the boolean flag
+# use_cellbender <- snakemake@params[["use_cellbender"]]
+use_cellbender <- T
 
 # define ogganisim
-# in_id_org <- "9606"
-in_id_org <- snakemake@params$id_org
+in_id_org <- "9606"
+# in_id_org <- snakemake@params$id_org
 message("id organism: ", in_id_org)
 
-# Determine the specific h5 input file
+# 3. Determine the final h5 path logic
 if (use_cellbender) {
-  # If cellbender ran, the input_target is the h5 output from cellbender
+  # If CellBender ran, the input_target IS the h5 file
   h5_file <- input_target
-  message(paste("Loading cellbender output from:", h5_file))
+  message(paste("Loading CellBender output from:", h5_file))
   
 } else {
-  # If cellbender do not run use the default 5h form cellranger
+  # If CellRanger ran, the input_target IS the folder
+  # We must construct the path to the file inside it
   h5_file <- file.path(input_target, "outs", "filtered_feature_bc_matrix.h5")
   message(paste("Loading CellRanger output from:", h5_file))
 }
 
-# Check if file exists (good practice for debugging)
+# 4. Check if file exists (good practice for debugging)
 if (!file.exists(h5_file)) {
   stop(paste("The h5 file was not found at:", h5_file))
 }
 
+# -------------------------------------------------------------------------
+
 # define the output
 # out_id_object <-  "results/Seurat/object/01_connect_5k_pbmc_NGSC3_ch1_gex_1_obj_preQC.rds"
 # out_id_meta <- "results/Seurat/table/01_connect_5k_pbmc_NGSC3_ch1_gex_1_meta_preQC.rds"
-out_id_object <- snakemake@output$rds
-out_id_meta <- snakemake@output$meta
+out_id_object <-  "out/object/01_cellbender_test_connect_5k_pbmc_obj_preQC.rds"
+out_id_meta <- "out/table/01_cellbender_test_connect_5k_pbmc_meta_preQC.tsv"
+# out_id_object <- snakemake@output$rds
+# out_id_meta <- snakemake@output$meta
 
 message("output rds: ", out_id_object)
 message("output meta: ", out_id_meta)
@@ -76,9 +97,9 @@ message("output meta: ", out_id_meta)
 # ======================================================================
 
 # read in the matrix
-# data <- Read10X(data.dir = file.path(result_folder,in_id_data))
-# This function is needed as the output of cellbender cannot be read directly from Read10X_h5.
-# this can handle both default cellranger of cellbender output
+# change the implementaiton by reading in the h5 rather than the folder
+# data <- Read10X_h5(filename = file.path(result_folder,in_id_data))
+# this function is needed as the output of cellbender cannot be read directly from Read10X_h5
 data <- Read_CellBender_h5_Mat(file_name = h5_file)
 
 # ======================================================================

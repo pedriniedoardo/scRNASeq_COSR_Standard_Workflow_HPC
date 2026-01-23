@@ -10,27 +10,32 @@ library(tidyverse)
 
 # define the meta tables
 # meta_tables = expand(rules.runSamplePreprocessing.output.meta,sample_name=SAMPLES.keys())
-# meta_tables <- 
-meta_tables <- snakemake@input$meta_tables
+# meta_tables <- snakemake@input$meta_tables
+meta_tables <- c("../../../results/Seurat/table/connect_5k_pbmc_NGSC3_ch1_gex_1_cellbender_meta_preQC.tsv",
+                 "../../../results/Seurat/table/connect_5k_pbmc_NGSC3_ch1_gex_2_cellbender_meta_preQC.tsv")
 message("input metadata: ", meta_tables)
 
 # pull all the sample names
+# sample_name <- snakemake@params$sample_names
 # NOTE: Snakemake guarantees these are in the same order as meta_tables
-sample_names <- snakemake@params$sample_names
+sample_names <- c("connect_5k_pbmc_NGSC3_ch1_gex_1","connect_5k_pbmc_NGSC3_ch1_gex_2")
 message("sample wildcards: ", sample_names)
 
 # define the output
 # out_id_object <-  "results/Seurat/object/01_connect_5k_pbmc_NGSC3_ch1_gex_1_obj_preQC.rds"
 # out_id_meta <- "results/Seurat/table/01_connect_5k_pbmc_NGSC3_ch1_gex_1_meta_preQC.rds"
-out_plot_mito <- snakemake@output$plot_mito
-out_plot_feature <- snakemake@output$plot_feature
-out_LUT_QC <- snakemake@output$LUT_QC
-out_meta_total <- snakemake@output$meta_total
+# out_plot_mito <- snakemake@output$plot_mito
+# out_plot_feature <- snakemake@output$plot_feature
+# out_LUT_QC <- snakemake@output$LUT_QC
+out_LUT_QC <- "../../../results/Seurat/table/LUT_QC_cellbender.csv"
+message("output LUT: ", out_LUT_QC)
 
-message("output plot mito: ", out_plot_mito)
-message("output plot feature: ", out_plot_feature)
-message("output table meta total before QC: ", out_LUT_QC)
-message("output table LUT QC: ", out_LUT_QC)
+# out_meta_total <- snakemake@output$meta_total
+# 
+# message("output plot mito: ", out_plot_mito)
+# message("output plot feature: ", out_plot_feature)
+# message("output table meta total before QC: ", out_LUT_QC)
+# message("output table LUT QC: ", out_LUT_QC)
 
 # make sure meta_tables and sample_names are matched
 # file_path <- meta_tables[1]
@@ -79,7 +84,6 @@ meta_total <- pmap(list(meta_tables,sample_names),function(x,x_name){
 # define some plotting parameters
 # define number of rows in the panel
 test <- length(sample_names)
-
 message("number of samples processed: ", test)
 
 # test <- 10
@@ -136,18 +140,18 @@ LUT_df <- data.frame(sample_name = sample_names,
 # ======================================================================
 
 # save plot histo mito prop reads
-ggsave(plot = p_mito,
-       out_plot_mito,
-       width = 4 * panel_col,
-       height = 4 * panel_row)
-
-# save plot histo feature reads
-ggsave(plot = p_feature,
-       out_plot_feature,
-       width = 4 * panel_col,
-       height = 4 * panel_row)
-
-# save tables
-write_tsv(meta_total,out_meta_total)
+# ggsave(plot = p_mito,
+#        out_plot_mito,
+#        width = 4 * panel_col,
+#        height = 4 * panel_row)
+# 
+# # save plot histo feature reads
+# ggsave(plot = p_feature,
+#        out_plot_feature,
+#        width = 4 * panel_col,
+#        height = 4 * panel_row)
+# 
+# # save tables
+# write_tsv(meta_total,out_meta_total)
 write_csv(LUT_df,out_LUT_QC)
 

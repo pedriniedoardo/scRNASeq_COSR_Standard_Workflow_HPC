@@ -32,6 +32,9 @@ set-threads:
     runApplyQC: 4
     cellranger_mkref: 16
     integrateSamples: 8
+    runCellbender: 8
+    runVelocyto: 8
+    runVelocytoTest: 8
 
 set-resources:
     runCellranger: 
@@ -64,3 +67,9 @@ set-resources:
     cellranger_mkref:
         mem_mb: 96000 # To be decided
         mem_gb: 96
+    runCellbender:
+        mem_mb: 8000
+    runVelocyto:
+        mem_mb: 32000
+    runVelocytoTest:
+        mem_mb: 32000
